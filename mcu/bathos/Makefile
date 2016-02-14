@@ -142,6 +142,15 @@ bathos.bin: bathos
 bathos: bathos.o
 	$(CC) bathos.o $(LDFLAGS) -o $@
 
+MCU_TARGET	:= atmega32u4
+CFG     	:= ../../tools/avrdude.conf
+SERIAL		:= /dev/ttyACM0
+BAUDRATE	:= 57600
+
+run : bathos.hex $(CFG) Makefile
+	avrdude -C$(CFG) -v -v -v -v -p$(MCU_TARGET) -cavr109 -P$(SERIAL) -b$(BAUDRATE) -D -Uflash:w:$<:i
+
+
 obj-y =  main.o sys_timer.o periodic_scheduler.o pipe.o version_data.o \
 $(AOBJ) $(TOBJ) $(LOBJ) $(LIBARCH) $(LIBS)
 
@@ -171,7 +180,10 @@ silentoldconfig:
 	@mkdir -p include/config
 	$(MAKE) -f Makefile.kconfig $@
 
-scripts_basic config %config:
+scripts_basic:
+	$(MAKE) -f Makefile.kconfig $@
+
+%config:
 	$(MAKE) -f Makefile.kconfig $@
 
 defconfig:
@@ -181,4 +193,4 @@ defconfig:
 
 .config: silentoldconfig
 
-.PHONY: version_data.o
+.PHONY: run version_data.o

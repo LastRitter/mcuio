@@ -1,6 +1,7 @@
 *~
 *.o
 *.a
+*.lds
 *.map
 *.hex
 /bathos

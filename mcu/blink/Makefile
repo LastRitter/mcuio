@@ -71,7 +71,10 @@ override LDFLAGS = -Wl,-Map,$(PRG).map
 OBJCOPY = avr-objcopy
 OBJDUMP = avr-objdump
 
+.PHONY : all clean run
+
 all: $(PRG).elf lst text eeprom
+
 $(PRG).elf: $(OBJ)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
 
