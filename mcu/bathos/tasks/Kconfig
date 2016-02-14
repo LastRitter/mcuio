@@ -1,0 +1,217 @@
+
+config TASK_MCUIO
+       prompt "Mcuio protocol implementation"
+       bool
+       help
+	 Enable mcuio implementation
+
+config MCUIO_ALIVE_TASK
+	prompt "Mcuio alive task"
+	bool
+	depends on TASK_MCUIO
+	default n
+	help
+	  Print "mcuio alive" string on stdout once every 60s
+
+config MCUIO_PIPE_INPUT_PATH
+       prompt "Mcuio input pipe path"
+       string
+       depends on TASK_MCUIO
+       default "fd:3" if ARCH=unix
+       default "uart-mux-yun" if ARCH=atmega
+       help
+         The pipe where mcuio will take its input from
+
+config MCUIO_PIPE_OUTPUT_PATH
+       prompt "Mcuio output pipe path"
+       string
+       depends on TASK_MCUIO
+       default "fd:4" if ARCH=unix
+       default "uart-mux-yun" if ARCH=atmega
+       help
+         The pipe where mcuio will send its output to
+
+config MCUIO_DEBUG
+       prompt "Mcuio debug"
+       bool
+       depends on TASK_MCUIO
+       default n
+
+config MCUIO_ZERO
+       prompt "Mcuio zero function"
+       bool
+       depends on TASK_MCUIO
+       default n
+
+config MCUIO_GPIO
+       prompt "Mcuio gpio function"
+       bool
+       depends on TASK_MCUIO
+       default n
+
+config MCUIO_GPIO_DEVICE
+       prompt "Device id for gpios"
+       hex
+       depends on MCUIO_GPIO
+       default 0x8255
+
+config MCUIO_GPIO_VENDOR
+       prompt "Vendor id for gpios"
+       hex
+       depends on MCUIO_GPIO
+       default 0xaaaa
+
+config MCUIO_ADC
+       prompt "Mcuio ADC function"
+       bool
+       depends on TASK_MCUIO
+       default n
+
+config MCUIO_PWM
+       prompt "Mcuio PWM function"
+       bool
+       depends on TASK_MCUIO
+       default n
+
+choice
+       prompt "Irq controller"
+
+config MCUIO_IRQ_CONTROLLER_MSG
+       prompt "Message irq controller"
+       bool
+       help
+         This adds an mcuio function which sends interrupts to the MPU via
+	 an MCU message over the bus
+
+config MCUIO_IRQ_CONTROLLER_NONE
+       prompt "No irq controller"
+       bool
+       help
+         This avoids building any interrupt controller
+
+endchoice
+
+config MCUIO_IRQ_CONTROLLER_WIRE_DEVICE
+       prompt "Device id for irq controller"
+       hex
+       depends on MCUIO_IRQ_CONTROLLER_WIRE
+       default 0x1111
+
+config MCUIO_IRQ_CONTROLLER_WIRE_VENDOR
+       prompt "Vendor id for wire irq controller"
+       hex
+       depends on MCUIO_IRQ_CONTROLLER_WIRE
+       default 0xaaaa
+
+config MCUIO_IRQ_WIRE_GPIO_NUMBER
+       prompt "Gpio for irq wire"
+       int
+       depends on MCUIO_IRQ_CONTROLLER_WIRE
+       default 30
+       help
+         This selects the gpio through which interrupts shall be sent to the
+	 MPU
+
+config MCUIO_IRQ_WIRE_ACTIVE_LEVEL
+       prompt "Active level for irq wire"
+       int
+       depends on MCUIO_IRQ_CONTROLLER_WIRE
+       default 0
+       help
+         This select the active level for irqs sent to the MPU
+
+config MCUIO_IRQ_TEST
+       prompt "Irq test function"
+       bool
+       depends on TASK_MCUIO && !MCUIO_IRQ_CONTROLLER_NONE
+       default y
+       help
+         This adds an mcuio irq test function: such function such triggers
+	 an irq every CONFIG_MCUIO_IRQ_TEST_HW_TICKS hw timer ticks
+
+config MCUIO_IRQ_TEST_HW_TICKS
+       prompt "Irq test period in hw ticks"
+       int
+       depends on MCUIO_IRQ_TEST
+       default 1
+       help
+         This selects a period for the periodic interrupt sent my the mcuio
+	 irq test function (see CONFIG_MCUIO_IRQ_TEST)
+
+config MCUIO_SHIELD
+       prompt "generic mcuio shield function"
+       bool
+       depends on TASK_MCUIO
+       default n
+       help
+         This adds an mcuio function which tells the host that a
+	 shield is present
+
+config MCUIO_SHIELD_VENDOR_ID
+       prompt "Shield vendor id"
+       hex
+       depends on MCUIO_SHIELD
+       default 0x0001
+       help
+	 This defines an mcuio vendor id for an arduino shield.
+
+config MCUIO_SHIELD_DEVICE_ID
+       prompt "Shield device id"
+       hex
+       depends on MCUIO_SHIELD
+       default 0x0001
+       help
+	 This defines an mcuio vendor id for an arduino shield.
+
+choice
+	prompt "Gpio names map"
+
+config MCUIO_GPIO_MAP_YUN
+       bool "arduino yun gpio map"
+       depends on MCUIO_GPIO
+       help
+         This selects a gpio map corresponding to an arduino shield
+
+config MCUIO_GPIO_MAP_YUN_LUCKY
+       bool "arduino yun + lucky shield gpio map"
+       depends on MCUIO_GPIO
+       help
+         This selects a gpio map corresponding to a yun board + lucky shield
+
+config MCUIO_GPIO_MAP_ATMEGA32U4
+       bool "generic 32u4 gpio map"
+       depends on MCUIO_GPIO
+       help
+         This selects a generic map for a 32U4
+
+endchoice
+
+config MCUIO_BITBANG_I2C
+       bool "mcuio bitbang i2c function"
+       depends on TASK_MCUIO
+       help
+	 This adds an I2C bitbang controller MCUIO function
+
+config MCUIO_BITBANG_I2C_DEVICE
+       prompt "Device id for bitbang i2c function"
+       hex
+       depends on MCUIO_BITBANG_I2C
+       default 0x1112
+
+config MCUIO_BITBANG_I2C_VENDOR
+       prompt "Vendor id for bitbang i2c function"
+       hex
+       depends on MCUIO_BITBANG_I2C
+       default 0xaaaa
+
+config MCUIO_BITBANG_I2C_SDA
+       prompt "Gpio number corresponding to I2C SDA signal"
+       int
+       depends on MCUIO_BITBANG_I2C
+       default 30
+
+config MCUIO_BITBANG_I2C_SCL
+       prompt "Gpio number corresponding to I2C SCL signal"
+       int
+       depends on MCUIO_BITBANG_I2C
+       default 31

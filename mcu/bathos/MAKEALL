@@ -1,0 +1,59 @@
+#!/bin/sh
+# A trivial script to build with all known configurations
+# (please add a configs/ file to test your special case)
+
+# remove environment variables, so config values apply
+unset CROSS_COMPILE
+unset ARCH
+
+# Backup previous .config file, if present
+rm -f .config.backup 2> /dev/null
+mv -f .config .config.backup 2> /dev/null
+touch .config
+
+# make some temporary files for logs
+C=$(mktemp /tmp/bathos-config.XXXXXX)
+remove_tmp_c=true
+
+B=$(mktemp /tmp/bathos-build.XXXXXX)
+remove_tmp_b=true
+
+TMPLOG=$(mktemp /tmp/bathos-tmp-build.XXXXXX)
+
+# loop on default .config files, building for all architectures
+configs=$(ls configs)
+for c in $configs; do
+    echo "##### Building with '$c'"
+    echo "##### Building with '$c'" >> $B
+    echo "##### Configuring for '$c'" >> $C
+    # make config and log
+    if ! make -s $c >> $C 2>&1; then
+	echo "Error in configuration (see $C)"
+	remove_tmp_c=false
+    fi
+    make -s clean
+    # build binaries and log
+    if ! make -j5 -s > $TMPLOG 2>&1; then
+	cat $TMPLOG
+	echo "Build error (see $B)"
+	remove_tmp_b=false
+    else
+	grep -v 'ar:.crea' $TMPLOG
+    fi
+    cat $TMPLOG >> $B
+    # print sizes
+    test -f bathos.o && size bathos.o
+    test -f bathos && size bathos | tail -n 1
+
+done
+
+make -s clean
+
+# clean logs if succesful
+if $remove_tmp_c; then rm $C; fi
+if $remove_tmp_b; then rm $B; fi
+rm $TMPLOG
+
+# restore previous .config file if needed, otherwise just clean.
+rm -f .config 2> /dev/null
+mv -f .config.backup .config 2> /dev/null
