@@ -7,23 +7,23 @@
 
 /* mcuio generic soft host controller functions */
 
-#include <linux/mcuio.h>
 #include <linux/circ_buf.h>
 #include <linux/slab.h>
 #include <linux/sched.h>
-#include <linux/regmap.h>
 #include <linux/err.h>
 #include <linux/workqueue.h>
 #include <linux/interrupt.h>
 #include <linux/irq.h>
 #include <linux/circ_buf.h>
-#include <linux/mcuio_ids.h>
 
-#include <linux/mcuio.h>
-#include <linux/mcuio-proto.h>
-#include <linux/mcuio-hc.h>
-#include <linux/mcuio-soft-hc.h>
+#include "mcuio.h"
+#include "mcuio_ids.h"
+#include "mcuio-proto.h"
+#include "mcuio-hc.h"
+#include "mcuio-soft-hc.h"
 #include "mcuio-internal.h"
+#include "mcuio-regmap.h"
+
 
 static struct notifier_block device_nb;
 

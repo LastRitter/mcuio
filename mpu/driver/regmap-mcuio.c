@@ -9,10 +9,10 @@
 #include <linux/io.h>
 #include <linux/module.h>
 #include <linux/slab.h>
-#include <linux/regmap.h>
 
-#include <linux/mcuio.h>
-#include <linux/mcuio-proto.h>
+#include "mcuio.h"
+#include "mcuio-proto.h"
+#include "mcuio-regmap.h"
 
 #define MAX_RETRIES 3
 
@@ -254,6 +254,3 @@ struct regmap *devm_regmap_init_mcuio(struct mcuio_device *mdev,
 }
 EXPORT_SYMBOL_GPL(devm_regmap_init_mcuio);
 
-MODULE_AUTHOR("Davide Ciminaghi");
-MODULE_DESCRIPTION("MCUIO bus regmap implementation");
-MODULE_LICENSE("GPL v2");

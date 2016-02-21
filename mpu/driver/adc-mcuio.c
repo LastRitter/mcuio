@@ -10,10 +10,11 @@
 #include <linux/err.h>
 #include <linux/module.h>
 #include <linux/iio/iio.h>
-#include <linux/regmap.h>
-#include <linux/mcuio.h>
-#include <linux/mcuio_ids.h>
-#include <linux/mcuio-proto.h>
+
+#include "mcuio.h"
+#include "mcuio_ids.h"
+#include "mcuio-proto.h"
+#include "mcuio-regmap.h"
 
 #define MCUIO_ADC_FLAG_SIGNED	(1 << 0)
 
@@ -213,19 +214,15 @@ static struct mcuio_driver mcuio_adc_driver = {
 	.remove = mcuio_adc_remove,
 };
 
-static int __init mcuio_adc_init(void)
+int mcuio_adc_init(void)
 {
 	return mcuio_driver_register(&mcuio_adc_driver, THIS_MODULE);
 }
 
-static void __exit mcuio_adc_exit(void)
+int mcuio_adc_exit(void)
 {
 	mcuio_driver_unregister(&mcuio_adc_driver);
+        return 0;
 }
 
-subsys_initcall(mcuio_adc_init);
-module_exit(mcuio_adc_exit);
 
-MODULE_AUTHOR("Aurelio Colosimo <aurelio@aureliocolosimo.it>");
-MODULE_DESCRIPTION("MCUIO adc driver");
-MODULE_LICENSE("GPL v2");

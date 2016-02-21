@@ -29,7 +29,6 @@
 #include <linux/device.h>
 #include <linux/slab.h>
 #include <linux/types.h>
-#include <linux/regmap.h>
 #include <linux/interrupt.h>
 #include <linux/irq.h>
 #include <linux/workqueue.h>
@@ -38,10 +37,11 @@
 #include <linux/gpio.h>
 #include <linux/delay.h>
 
-#include <linux/mcuio.h>
-#include <linux/mcuio-hc.h>
-#include <linux/mcuio_ids.h>
-#include <linux/mcuio-proto.h>
+#include "mcuio.h"
+#include "mcuio-hc.h"
+#include "mcuio_ids.h"
+#include "mcuio-proto.h"
+#include "mcuio-regmap.h"
 
 #include "mcuio-internal.h"
 

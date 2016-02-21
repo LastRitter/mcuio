@@ -11,7 +11,6 @@
 #include <linux/device.h>
 #include <linux/slab.h>
 #include <linux/types.h>
-#include <linux/regmap.h>
 #include <linux/workqueue.h>
 #include <linux/kthread.h>
 #include <linux/irq.h>
@@ -19,9 +18,10 @@
 #include <linux/interrupt.h>
 #include <linux/circ_buf.h>
 
-#include <linux/mcuio.h>
-#include <linux/mcuio_ids.h>
-#include <linux/mcuio-proto.h>
+#include "mcuio.h"
+#include "mcuio_ids.h"
+#include "mcuio-proto.h"
+#include "mcuio-regmap.h"
 
 #define I2C_MCUIO_BUF_MAX_SIZE 0x100
 #define I2C_MCUIO_IBUF_MAX_SIZE I2C_MCUIO_BUF_MAX_SIZE
@@ -652,19 +652,16 @@ static struct mcuio_driver mcuio_simple_i2c_driver = {
 	.remove = mcuio_simple_i2c_remove,
 };
 
-static int __init mcuio_simple_i2c_init(void)
+int mcuio_i2c_init(void)
 {
 	return mcuio_driver_register(&mcuio_simple_i2c_driver, THIS_MODULE);
 }
 
-static void __exit mcuio_simple_i2c_exit(void)
+int mcuio_i2c_exit(void)
 {
-	return mcuio_driver_unregister(&mcuio_simple_i2c_driver);
+	mcuio_driver_unregister(&mcuio_simple_i2c_driver);
+        return 0;
 }
 
-subsys_initcall(mcuio_simple_i2c_init);
-module_exit(mcuio_simple_i2c_exit);
 
-MODULE_AUTHOR("Davide Ciminaghi");
-MODULE_DESCRIPTION("MCUIO simple i2c controller driver");
-MODULE_LICENSE("GPL v2");
+

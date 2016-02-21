@@ -7,18 +7,19 @@
 
 /* mcuio host controller functions */
 
-#include <linux/mcuio.h>
 #include <linux/circ_buf.h>
 #include <linux/slab.h>
 #include <linux/sched.h>
-#include <linux/regmap.h>
 #include <linux/err.h>
 #include <linux/workqueue.h>
 #include <linux/circ_buf.h>
-#include <linux/mcuio_ids.h>
-#include <linux/mcuio-hc.h>
-#include <linux/mcuio-soft-hc.h>
+
+#include "mcuio.h"
+#include "mcuio_ids.h"
+#include "mcuio-hc.h"
+#include "mcuio-soft-hc.h"
 #include "mcuio-internal.h"
+#include "mcuio-regmap.h"
 
 static struct mcuio_device_id default_hc_id = {
 	.device = MCUIO_DEVICE_GENERIC_HC,

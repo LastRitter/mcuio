@@ -16,11 +16,11 @@
 #include <linux/platform_device.h>
 #include <linux/pwm.h>
 #include <linux/slab.h>
-#include <linux/regmap.h>
 
-#include <linux/mcuio.h>
-#include <linux/mcuio_ids.h>
-#include <linux/mcuio-proto.h>
+#include "mcuio.h"
+#include "mcuio_ids.h"
+#include "mcuio-proto.h"
+#include "mcuio-regmap.h"
 
 #define CAP_RES(x)     (x & 0x00ffffff)
 #define CAP_CH_PER(x)  ((x >> 24) & 0x1)
@@ -294,19 +294,15 @@ static struct mcuio_driver mcuio_pwm_driver = {
 	.remove = mcuio_pwm_remove,
 };
 
-static int __init mcuio_pwm_init(void)
+int mcuio_pwm_init(void)
 {
 	return mcuio_driver_register(&mcuio_pwm_driver, THIS_MODULE);
 }
 
-static void __exit mcuio_pwm_exit(void)
+int mcuio_pwm_exit(void)
 {
 	mcuio_driver_unregister(&mcuio_pwm_driver);
+        return 0;
 }
 
-subsys_initcall(mcuio_pwm_init);
-module_exit(mcuio_pwm_exit);
 
-MODULE_AUTHOR("Aurelio Colosimo");
-MODULE_DESCRIPTION("MCUIO driver for PWM");
-MODULE_LICENSE("GPL v2");

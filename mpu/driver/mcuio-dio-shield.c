@@ -15,7 +15,6 @@
 #include <linux/device.h>
 #include <linux/slab.h>
 #include <linux/types.h>
-#include <linux/regmap.h>
 #include <linux/workqueue.h>
 #include <linux/irq.h>
 #include <linux/interrupt.h>
@@ -24,9 +23,10 @@
 #include <linux/platform_device.h>
 #include <linux/i2c/pca953x.h>
 
-#include <linux/mcuio.h>
-#include <linux/mcuio_ids.h>
-#include <linux/mcuio-proto.h>
+#include "mcuio.h"
+#include "mcuio_ids.h"
+#include "mcuio-proto.h"
+#include "mcuio-regmap.h"
 
 #include "mcuio-internal.h"
 #include "mcuio-shields.h"

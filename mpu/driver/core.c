@@ -84,24 +84,119 @@ EXPORT_SYMBOL(mcuio_get_i2c_adapter);
 
 static int __init mcuio_init(void)
 {
-	int ret;
-	spin_lock_init(&busnum_lock);
-	ret = device_register(&mcuio_bus);
-	if (ret)
-		return ret;
-	/* Register mcuio bus */
-	return bus_register(&mcuio_bus_type);
+    int ret = 0;
+
+    spin_lock_init(&busnum_lock);
+    
+    ret = device_register(&mcuio_bus);
+    if(ret != 0)
+    {
+        printk(KERN_ERR "register mcuio device failed !\n");
+        goto mcuio_device_init_failed;
+    }
+
+    ret = bus_register(&mcuio_bus_type);
+    if(ret != 0)
+    {
+        printk(KERN_ERR "register mcuio bus failed !\n");
+        goto mcuio_bus_init_failed;
+    }
+    
+#ifdef MCUIO_HC
+    ret = mcuio_hc_init();
+    if(ret != 0)
+    {
+        printk(KERN_ERR "init mcuio hc failed !\n");
+        goto mcuio_hc_init_failed;
+    }
+#endif /* MCUIO_HC */
+
+#ifdef MCUIO_LDISC
+    ret = mcuio_ldisc_init();
+    if(ret != 0)
+    {
+        printk(KERN_ERR "init mcuio ldisc failed !\n");
+        goto mcuio_ldisc_init_failed;
+    }
+#endif /* MCUIO_LDISC */
+
+#ifdef MCUIO_ADC
+    ret = mcuio_adc_init();
+    if(ret != 0)
+    {
+        printk(KERN_ERR "init mcuio adc failed !\n");
+        goto mcuio_adc_init_failed;
+    }
+#endif /* MCUIO_ADC */
+    
+#ifdef MCUIO_GPIO
+    ret = mcuio_gpio_init();
+    if(ret !=0)
+    {
+        printk(KERN_ERR "init mcuio gpio failed !\n");
+        goto mcuio_gpio_init_failed;
+    }
+#endif /* MCUIO_GPIO */
+
+    return ret;
+
+#ifdef MCUIO_GPIO
+mcuio_gpio_init_failed : 
+#endif /* MCUIO_GPIO */
+
+#ifdef MCUIO_ADC
+    mcuio_adc_exit();
+mcuio_adc_init_failed : 
+#endif /* MCUIO_ADC */
+
+#ifdef MCUIO_LDISC
+    mcuio_ldisc_exit();
+mcuio_ldisc_init_failed : 
+#endif /* MCUIO_LDISC */
+
+#ifdef MCUIO_HC
+    mcuio_hc_exit();
+mcuio_hc_init_failed : 
+#endif /* MCUIO_HC */
+
+    bus_unregister(&mcuio_bus_type);
+
+mcuio_bus_init_failed : 
+    device_unregister(&mcuio_bus);
+
+mcuio_device_init_failed : 
+    return ret;
 }
 
 static void __exit mcuio_exit(void)
 {
-	/* Remove mcuio bus */
-	device_unregister(&mcuio_bus);
-	bus_unregister(&mcuio_bus_type);
-	return;
+#ifdef MCUIO_GPIO
+    mcuio_gpio_exit();
+#endif /* MCUIO_GPIO */
+
+#ifdef MCUIO_ADC
+    mcuio_adc_exit();
+#endif /* MCUIO_ADC */
+
+#ifdef MCUIO_LDISC
+    mcuio_ldisc_exit();
+#endif /* MCUIO_LDISC */
+
+#ifdef MCUIO_HC
+    mcuio_hc_exit();
+#endif /* MCUIO_HC */
+
+    bus_unregister(&mcuio_bus_type);
+
+    device_unregister(&mcuio_bus);
+ 
+#ifdef MCUIO_HC
+    mcuio_hc_exit();
+#endif /* MCUIO_HC */
+
 }
 
-postcore_initcall(mcuio_init);
+module_init(mcuio_init);
 module_exit(mcuio_exit);
 
 MODULE_AUTHOR("Davide Ciminaghi");

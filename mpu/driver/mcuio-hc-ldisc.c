@@ -12,11 +12,10 @@
 #include <linux/errno.h>
 #include <linux/circ_buf.h>
 
-#include <linux/mcuio.h>
-
-#include <linux/mcuio-proto.h>
-#include <linux/mcuio-hc.h>
-#include <linux/mcuio-soft-hc.h>
+#include "mcuio.h"
+#include "mcuio-proto.h"
+#include "mcuio-hc.h"
+#include "mcuio-soft-hc.h"
 
 #include "mcuio-internal.h"
 
@@ -133,19 +132,15 @@ static struct tty_ldisc_ops mcuio_ldisc = {
 	.receive_buf	= mcuio_ldisc_receive_buf,
 };
 
-static int __init mcuio_ldisc_init(void)
+int mcuio_ldisc_init(void)
 {
 	return tty_register_ldisc(N_MCUIO, &mcuio_ldisc);
 }
 
-static void __exit mcuio_ldisc_exit(void)
+int mcuio_ldisc_exit(void)
 {
 	tty_unregister_ldisc(N_MCUIO);
+        return 0;
 }
 
-module_init(mcuio_ldisc_init);
-module_exit(mcuio_ldisc_exit);
 
-MODULE_LICENSE("GPL v2");
-MODULE_ALIAS_LDISC(N_MCUIO);
-MODULE_AUTHOR("Davide Ciminaghi, derived from slip ldisc implementation");

@@ -14,16 +14,17 @@
 #include <linux/device.h>
 #include <linux/slab.h>
 #include <linux/types.h>
-#include <linux/regmap.h>
 #include <linux/workqueue.h>
 #include <linux/kthread.h>
 #include <linux/irq.h>
 #include <linux/interrupt.h>
 #include <linux/gpio.h>
 
-#include <linux/mcuio.h>
-#include <linux/mcuio_ids.h>
-#include <linux/mcuio-proto.h>
+#include "mcuio.h"
+#include "mcuio_ids.h"
+#include "mcuio-proto.h"
+#include "mcuio-regmap.h"
+
 
 struct mcuio_gpio {
 	struct regmap		*map;
@@ -352,7 +353,8 @@ static int mcuio_gpio_remove(struct mcuio_device *mdev)
 	}
 	free_irq(mdev->irq, g);
 	irq_free_descs(g->irq_base, g->chip.ngpio);
-	return gpiochip_remove(&g->chip);
+	gpiochip_remove(&g->chip);
+	return 0;
 }
 
 static const struct mcuio_device_id gpio_drv_ids[] = {
@@ -376,19 +378,16 @@ static struct mcuio_driver mcuio_gpio_driver = {
 	.remove = mcuio_gpio_remove,
 };
 
-static int __init mcuio_gpio_init(void)
+int mcuio_gpio_init(void)
 {
 	return mcuio_driver_register(&mcuio_gpio_driver, THIS_MODULE);
 }
 
-static void __exit mcuio_gpio_exit(void)
+int mcuio_gpio_exit(void)
 {
-	return mcuio_driver_unregister(&mcuio_gpio_driver);
+	mcuio_driver_unregister(&mcuio_gpio_driver);
+        return 0;
 }
 
-subsys_initcall(mcuio_gpio_init);
-module_exit(mcuio_gpio_exit);
 
-MODULE_AUTHOR("Davide Ciminaghi");
-MODULE_DESCRIPTION("MCUIO gpio generic driver");
-MODULE_LICENSE("GPL v2");
+

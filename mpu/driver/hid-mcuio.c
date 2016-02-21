@@ -10,7 +10,8 @@
 #include <linux/input/mt.h>
 #include <linux/module.h>
 #include <linux/slab.h>
-#include <linux/mcuio_ids.h>
+
+#include "mcuio_ids.h"
 
 static int mcuio_js_hid_probe(struct hid_device *hdev,
 			      const struct hid_device_id *id)
@@ -38,9 +39,9 @@ static void mcuio_js_hid_remove(struct hid_device *hdev)
 }
 
 static const struct hid_device_id mcuio_js_hid[] = {
-	{ HID_DEVICE(BUS_VIRTUAL, MCUIO_VENDOR_DOGHUNTER,
+	{ HID_DEVICE(BUS_VIRTUAL, 0, MCUIO_VENDOR_DOGHUNTER,
 		     MCUIO_DEVICE_JOYSTICK_SHIELD), .driver_data = 0, },
-	{ HID_DEVICE(BUS_VIRTUAL, MCUIO_VENDOR_DOGHUNTER,
+	{ HID_DEVICE(BUS_VIRTUAL, 0, MCUIO_VENDOR_DOGHUNTER,
 		     MCUIO_DEVICE_LUCKY_SHIELD), .driver_data = 0, },
 	{ }
 };
@@ -53,7 +54,7 @@ static struct hid_driver mcuio_js_hid_driver = {
 	.remove = mcuio_js_hid_remove,
 };
 
-static int __init mcuio_js_hid_init(void)
+int mcuio_hid_init(void)
 {
 	int ret;
 
@@ -64,11 +65,11 @@ static int __init mcuio_js_hid_init(void)
 	return ret;
 }
 
-static void __exit mcuio_js_hid_exit(void)
+int mcuio_hid_exit(void)
 {
 	hid_unregister_driver(&mcuio_js_hid_driver);
+        return 0;
 }
 
-module_init(mcuio_js_hid_init);
-module_exit(mcuio_js_hid_exit);
-MODULE_LICENSE("GPL");
+
+

@@ -14,7 +14,8 @@
 #include <linux/workqueue.h>
 #include <linux/kthread.h>
 #include <linux/irq.h>
-#include <linux/mcuio-proto.h>
+
+#include "mcuio-proto.h"
 
 struct mcuio_soft_hc;
 

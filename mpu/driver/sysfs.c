@@ -13,8 +13,8 @@
 #include <linux/types.h>
 #include <linux/sysfs.h>
 
-#include <linux/mcuio.h>
-#include <linux/mcuio_ids.h>
+#include "mcuio.h"
+#include "mcuio_ids.h"
 #include "mcuio-internal.h"
 
 

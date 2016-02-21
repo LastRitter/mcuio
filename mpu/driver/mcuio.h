@@ -190,6 +190,29 @@ static inline void mcuio_free_request(struct mcuio_request *r)
 		r->release(r);
 }
 
+
+int mcuio_hc_init(void);
+int mcuio_hc_exit(void);
+
+int mcuio_ldisc_init(void);
+int mcuio_ldisc_exit(void);
+
+int mcuio_adc_init(void);
+int mcuio_adc_exit(void);
+
+int mcuio_gpio_init(void);
+int mcuio_gpio_exit(void);
+
+int mcuio_hid_init(void);
+int mcuio_hid_exit(void);
+
+int mcuio_i2c_init(void);
+int mcuio_i2c_exit(void);
+
+int mcuio_pwm_init(void);
+int mcuio_pwm_exit(void);
+
+
 #endif /* __KERNEL__ */
 
 #endif /* __MCUIO_H__ */
