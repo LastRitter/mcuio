@@ -1,0 +1,191 @@
+
+This document describes some tests to check whether the mcuio system is
+alive.
+
+============== TESTS ON SIMULATED HW ===============
+
+First, let's see a useful configuration which can be used with no
+actual MCU hardware. Things can be setup according to the following diagram:
+
+
+       	    	       	  		         MPU
+                                     +------------------------------+
++---------------------+		     |                          US  |
+|                     |   socket     |   [master]        [slave]    |
+| MCU simulator on PC |<--------------->/dev/ptsX       /dev/ptsY   |
+|                     |              | 	    |              ^	    |
++---------------------+              |      |              |        |
+                                     |      |              |        |
+                                     +======V==============|========+
+				     |    +--------------------+
+				     |	  |   mcuio-hc-ldisc   |    |
+				     |    +--------------------+    |
+				     |                          KS  |
+				     +------------------------------+
+
+US             = User Space
+KS             = Kernel Space
+mcuio-hc-ldisc = module implementing the line discipline based mcuio
+                 host controller
+
+
+The mcuio protocol has been implemented as a single UNIX process using a
+slightly modified version of the bathos operating system (see
+ git@gitorious.org:rubi/bathos.git for the original version).
+
+/dev/ptsX and /dev/ptsY are respectively the master and slave side of a
+pseudo-terminal. A process (not shown in the picture) sets the slave discipline
+on /dev/ptsY via TIOCSETD and keeps the terminal open:
+
+int main(int argc, char *argv[])
+{
+        int d = 29;
+        int fd = open(argv[1], O_RDONLY);
+
+        if (fd < 0) {
+                perror("open");
+                exit(1);
+        }
+        if (ioctl(fd, TIOCSETD, &d) < 0) {
+                perror("TIOCSETD");
+                exit(2);
+        }
+        while(1)
+                sleep(10);
+}
+
+Here's some command line doing the trick:
+
+# Run this on the MCU simulator machine
+# Setup a tcp server on port 10000. When a connection with the client is
+# established, the server connects the resulting socket with file descriptors
+# 3 and 4, and finally executes bathos.
+socat TCP4-LISTEN:10000 EXEC:/home/develop/bathos/bathos,fdin=3,fdout=4
+
+# Run this on the MPU (tested on the yun board, linux-3.8.3)
+# Load the mcuio modules
+/sbin/insmod mcuio.ko
+/sbin/insmod mcuio-hc-dev.ko
+/sbin/insmod mcuio-soft-hc.ko
+/sbin/insmod mcuio-hc-drv.ko
+/sbin/insmod mcuio-hc-ldisc.ko
+# Allocate a pseudotty pair, connect to the server socket running on the MCU
+# simulator and run set_ldisc on the slave side of the pseudoterminal
+socat  -s -x PTY,link=/tmp/spty TCP4:192.168.1.1:10000 & \
+       set_ldisc $(readlink /tmp/spty)
+
+
+A dummy (zero) function device has been implemented on the mcu simulator, so
+that the resulting devices under the MPU are:
+
+root@dello:/sys/bus/mcuio# ls /sys/bus/mcuio/devices/
+0:0.0  0:1.0
+
+Where 0:0.0 is the line discipline host controller and 0:1.0 is the dummy
+device on the mcu:
+
+root@dello:/sys/bus/mcuio# cat devices/0\:1.0/device 
+0xdead
+root@dello:/sys/bus/mcuio# cat devices/0\:1.0/vendor 
+0xbeef
+
+============== TESTS ON ACTUAL HW ===============
+
+# MPU machine (the mips on yun board):
+# Boot with no serial console (we still use it to talk to the MCU):
+# Activate mcuio mode on bathos (send a CTRL-] via the usb serial interface)
+# Insert modules and set the line discipline on ttyATH0
+/sbin/insmod mcuio.ko
+/sbin/insmod mcuio-hc-dev.ko
+/sbin/insmod mcuio-soft-hc.ko
+/sbin/insmod mcuio-hc-drv.ko
+/sbin/insmod mcuio-hc-ldisc.ko
+/sbin/insmod regmap-mcuio.ko
+/sbin/insmod gpio-mcuio.ko
+stty 230400 < /dev/ttyATH0
+# Actual baud rate is 250000, the mips kernel will turn 230400 into 250000
+stty raw -echo 230400 < /dev/ttyATH0
+# Start the line discipline host controller
+set_ldisc /dev/ttyATH0
+
+# On a second terminal
+# MCU GPIOS are registered starting from 100. On yun gpio114 corresponds to D4,
+# while gpio115 corresponds to TXLED
+# Connect D4 to TXLED somehow (a wire or a resistor should be ok).
+# Export gpio114 and gpio115
+echo 114 > /sys/class/gpio/export
+echo 115 > /sys/class/gpio/export
+# Set D4 as output and TXLED as input
+echo out > /sys/class/gpio/gpio114/direction
+echo in > /sys/class/gpio/gpio115/direction
+# Turn D4 ON
+echo 1 > /sys/class/gpio/gpio114/value
+# The red led on the yun should now be on
+# Read back TXLED
+cat /sys/class/gpio/gpio115/value
+1
+# Turn D4 OFF
+echo 0 > /sys/class/gpio/gpio114/value
+# The red led on the yun should now be off
+# Read back TXLED
+cat /sys/class/gpio/gpio115/value
+0
+
+============= TEST JOYSTICK SHIELD ==================
+
+
+# Boot with no serial console (we still use it to talk to the MCU):
+# Activate mcuio mode on bathos (send a CTRL-] via the usb serial interface)
+# Insert modules and set the line discipline on ttyATH0
+/sbin/insmod mcuio.ko
+/sbin/insmod mcuio-hc-dev.ko
+/sbin/insmod mcuio-soft-hc.ko
+/sbin/insmod mcuio-hc-drv.ko
+/sbin/insmod mcuio-hc-ldisc.ko
+/sbin/insmod regmap-mcuio.ko
+/sbin/insmod gpio-mcuio.ko
+/sbin/insmod mcuio-irq-ctrl.ko
+# This enables the handshake signal
+echo 1 >/sys/class/gpio/gpio22/value
+/mnt/nfs/macchina/host.orig/set_ldisc /dev/ttyATH0
+
+# On a second terminal
+# Load the joystick shield related modules
+/sbin/insmod mcuio-js-shield.ko
+/sbin/insmod hid-mcuio-js.ko
+# Test events (press and release shield buttons)
+evtest /dev/input/event1
+
+Input driver version is 1.0.1
+Input device ID: bus 0x6 vendor 0x1 product 0x1 version 0x0
+Input device name: "mcuio-js-shield 0001:0001"
+Supported events:
+  Event type 0 (EV_SYN)
+  Event type 1 (EV_KEY)
+    Event code 256 (BTN_0)
+    Event code 257 (BTN_1)
+    Event code 258 (BTN_2)
+    Event code 259 (BTN_3)
+  Event type 4 (EV_MSC)
+    Event code 4 (MSC_SCAN)
+Properties:
+Testing ... (interrupt to exit)
+Event: time 6188.107734, type 4 (EV_MSC), code 4 (MSC_SCAN), value 90001
+Event: time 6188.107734, type 1 (EV_KEY), code 256 (BTN_0), value 1
+Event: time 6188.107734, -------------- SYN_REPORT ------------
+Event: time 6188.263370, type 4 (EV_MSC), code 4 (MSC_SCAN), value 90001
+Event: time 6188.263370, type 1 (EV_KEY), code 256 (BTN_0), value 0
+Event: time 6188.263370, -------------- SYN_REPORT ------------
+Event: time 6188.562402, type 4 (EV_MSC), code 4 (MSC_SCAN), value 90001
+Event: time 6188.562402, type 1 (EV_KEY), code 256 (BTN_0), value 1
+Event: time 6188.562402, -------------- SYN_REPORT ------------
+Event: time 6188.701671, type 4 (EV_MSC), code 4 (MSC_SCAN), value 90001
+Event: time 6188.701671, type 1 (EV_KEY), code 256 (BTN_0), value 0
+Event: time 6188.701671, -------------- SYN_REPORT ------------
+Event: time 6188.809485, type 4 (EV_MSC), code 4 (MSC_SCAN), value 90001
+Event: time 6188.809485, type 1 (EV_KEY), code 256 (BTN_0), value 1
+Event: time 6188.809485, -------------- SYN_REPORT ------------
+Event: time 6188.918780, type 4 (EV_MSC), code 4 (MSC_SCAN), value 90001
+Event: time 6188.918780, type 1 (EV_KEY), code 256 (BTN_0), value 0
+Event: time 6188.918780, -------------- SYN_REPORT ------------
+....
