@@ -2,7 +2,7 @@
 #define __MCUIO_INTERNAL_H__
 
 #include <linux/version.h>
-#include <linux/mcuio-proto.h>
+#include "mcuio-proto.h"
 
 extern struct bus_type mcuio_bus_type;
 extern struct device mcuio_bus;

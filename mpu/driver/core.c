@@ -12,12 +12,12 @@
 #include <linux/string.h>
 #include <linux/device.h>
 #include <linux/slab.h>
-#include <linux/mcuio.h>
 #include <linux/completion.h>
 #include <linux/spinlock.h>
 #include <linux/bitops.h>
 #include <linux/i2c.h>
-#include <linux/mcuio_ids.h>
+#include "mcuio.h"
+#include "mcuio_ids.h"
 #include "mcuio-internal.h"
 
 unsigned long int busnum;

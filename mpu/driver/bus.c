@@ -13,8 +13,8 @@
 #include <linux/types.h>
 #include <linux/err.h>
 
-#include <linux/mcuio.h>
-#include <linux/mcuio_ids.h>
+#include "mcuio.h"
+#include "mcuio_ids.h"
 #include "mcuio-internal.h"
 
 static inline int mcuio_device_is_host_controller(struct mcuio_device *mdev)
